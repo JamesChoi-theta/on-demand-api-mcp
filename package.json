@@ -1,7 +1,7 @@
 {
   "name": "@thetalabs/on-demand-api-mcp",
-  "version": "0.1.7",
-  "description": "Official MCP server for Theta EdgeCloud On-Demand Model APIs",
+  "version": "0.2.0-beta.1",
+  "description": "Official MCP server for Theta EdgeCloud inference, GPU Node, and billing APIs",
   "main": "dist/index.js",
   "bin": {
     "on-demand-api-mcp": "dist/index.js"
@@ -10,6 +10,7 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "dev": "ts-node src/index.ts",
+    "test": "npm run build && node test/controller-client-test.js",
     "prepublishOnly": "npm run build"
   },
   "keywords": [
@@ -25,7 +26,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/thetalabs/on-demand-api-mcp"
+    "url": "https://github.com/thetatoken/on-demand-api-mcp"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0"

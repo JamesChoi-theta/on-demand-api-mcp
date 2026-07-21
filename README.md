@@ -1,6 +1,6 @@
 # Theta EdgeCloud On-Demand API MCP Server
 
-Official Model Context Protocol (MCP) server for [Theta EdgeCloud's On-Demand Model APIs](https://www.thetaedgecloud.com). Access 20+ AI models directly from Claude Desktop, Claude Code, Cursor, and other MCP-compatible clients.
+Official Model Context Protocol (MCP) server for [Theta EdgeCloud](https://www.thetaedgecloud.com). Access on-demand models and project-scoped GPU Node and billing workflows from Claude Desktop, Claude Code, Cursor, and other MCP-compatible clients.
 
 ## Features
 
@@ -8,14 +8,19 @@ Official Model Context Protocol (MCP) server for [Theta EdgeCloud's On-Demand Mo
 - **Simple Integration** - Works with any MCP-compatible client
 - **Sync & Async** - Get results immediately or poll for long-running tasks
 - **File Uploads** - Upload local files for processing
+- **GPU Node Automation** - Discover capacity and manage hosted or community GPU Nodes
+- **Billing Visibility** - Read project usage, organization balance, prices, and sanitized top-up history
 
 ## Installation
+
+GPU Node and billing tools are currently beta-only. Use the npm `beta` tag until the controller APIs reach general availability.
 
 ### For Claude Desktop
 
 Add to your `claude_desktop_config.json`:
 
 **macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
+
 **Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
 
 ```json
@@ -23,9 +28,11 @@ Add to your `claude_desktop_config.json`:
   "mcpServers": {
     "theta-edgecloud": {
       "command": "npx",
-      "args": ["@thetalabs/on-demand-api-mcp"],
+      "args": ["@thetalabs/on-demand-api-mcp@beta"],
       "env": {
-        "THETA_API_KEY": "your-api-key-here"
+        "THETA_API_KEY": "your-api-key-here",
+        "THETA_PROJECT_ID": "prj_your-project-id",
+        "THETA_CONTROLLER_BASE_URL": "https://controller-beta.thetaedgecloud.com"
       }
     }
   }
@@ -35,7 +42,11 @@ Add to your `claude_desktop_config.json`:
 ### For Claude Code
 
 ```bash
-claude mcp add theta-edgecloud -e THETA_API_KEY=your-api-key-here -- npx @thetalabs/on-demand-api-mcp
+claude mcp add theta-edgecloud \
+  -e THETA_API_KEY=your-api-key-here \
+  -e THETA_PROJECT_ID=prj_your-project-id \
+  -e THETA_CONTROLLER_BASE_URL=https://controller-beta.thetaedgecloud.com \
+  -- npx @thetalabs/on-demand-api-mcp@beta
 ```
 
 Replace `your-api-key-here` with your actual API key.
@@ -101,6 +112,45 @@ Get a presigned URL to upload a local file.
 get_upload_url(service="whisper", input_field="audio_filename")
 ```
 
+### GPU Node and billing tools
+
+Resource discovery and read operations:
+
+```text
+list_gpu_resources()
+get_gpu_resource(resource_id="community_example")
+list_gpu_deployment_templates()
+list_gpu_deployments()
+get_gpu_deployment(deployment_id="dplb_example")
+get_gpu_deployment_events(deployment_id="dplb_example")
+get_gpu_deployment_logs(deployment_id="dplb_example")
+```
+
+Lifecycle operations require explicit confirmation. Community deployment creation also requires an hourly price ceiling:
+
+```text
+create_gpu_deployment(
+  deployment_template_id="dplt_example",
+  resource_id="community_example",
+  container_image="example/gpu:latest",
+  ssh_public_key="ssh-ed25519 ...",
+  max_price_per_hour_usd=0.25,
+  confirm=true
+)
+stop_gpu_deployment(deployment_id="dplb_example", confirm=true)
+start_gpu_deployment(deployment_id="dplb_example", confirm=true)
+delete_gpu_deployment(deployment_id="dplb_example", confirm=true)
+```
+
+Billing tools are read-only. Usage is project-scoped; balance and sanitized top-up history are organization-scoped:
+
+```text
+get_billing_balance()
+get_billing_usage(start_date="2026-07-01", end_date="2026-07-21")
+get_billing_pricing()
+list_billing_top_ups(page=1, number=20)
+```
+
 ## Example Conversations
 
 **User:** "What AI models are available on Theta EdgeCloud?"
@@ -126,7 +176,9 @@ get_upload_url(service="whisper", input_field="audio_filename")
 | Variable | Description | Required |
 |----------|-------------|----------|
 | `THETA_API_KEY` | Your Theta EdgeCloud API key | Yes |
-| `THETA_API_BASE_URL` | API base URL (default: https://api.thetaedgecloud.com) | No |
+| `THETA_API_BASE_URL` | On-demand API base URL (default: https://ondemand.thetaedgecloud.com) | No |
+| `THETA_PROJECT_ID` | Project used by GPU Node and billing tools | For resource tools |
+| `THETA_CONTROLLER_BASE_URL` | Controller URL; use beta while the v1 APIs are beta-only | For resource tools |
 
 ## Development
 

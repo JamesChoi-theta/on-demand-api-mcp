@@ -18,12 +18,17 @@ import { listServicesToolDefinition, listServices } from './tools/list-services.
 import { inferToolDefinition, infer } from './tools/infer.js';
 import { getRequestStatusToolDefinition, getRequestStatus } from './tools/get-request-status.js';
 import { getUploadUrlToolDefinition, getUploadUrl } from './tools/get-upload-url.js';
+import {
+  callResourceTool,
+  resourceToolDefinitions,
+  type ResourceToolInput,
+} from './tools/resource-management.js';
 
 // Create the MCP server
 const server = new Server(
   {
     name: 'theta-edgecloud-on-demand-api',
-    version: '0.1.0',
+    version: '0.2.0-beta.1',
   },
   {
     capabilities: {
@@ -40,6 +45,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       inferToolDefinition,
       getRequestStatusToolDefinition,
       getUploadUrlToolDefinition,
+      ...resourceToolDefinitions,
     ],
   };
 });
@@ -78,7 +84,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         break;
 
       default:
-        throw new Error(`Unknown tool: ${name}`);
+        result = await callResourceTool(name, (args || {}) as ResourceToolInput);
     }
 
     return {
@@ -125,10 +131,6 @@ async function main() {
     }, null, 2));
     process.exit(1);
   }
-
-  // Debug: Log API key info (for troubleshooting)
-  const apiKey = process.env.THETA_API_KEY;
-  console.error(`API Key received: length=${apiKey.length}, first10=${apiKey.substring(0, 10)}, last10=${apiKey.substring(apiKey.length - 10)}`);
 
   // Start the server with stdio transport
   const transport = new StdioServerTransport();
