@@ -28,7 +28,7 @@ Add to your `claude_desktop_config.json`:
   "mcpServers": {
     "theta-edgecloud": {
       "command": "npx",
-      "args": ["@thetalabs/on-demand-api-mcp@beta"],
+      "args": ["-y", "@thetalabs/on-demand-api-mcp@beta"],
       "env": {
         "THETA_API_KEY": "your-api-key-here",
         "THETA_PROJECT_ID": "prj_your-project-id",
@@ -46,7 +46,7 @@ claude mcp add theta-edgecloud \
   -e THETA_API_KEY=your-api-key-here \
   -e THETA_PROJECT_ID=prj_your-project-id \
   -e THETA_CONTROLLER_BASE_URL=https://controller-beta.thetaedgecloud.com \
-  -- npx @thetalabs/on-demand-api-mcp@beta
+  -- npx -y @thetalabs/on-demand-api-mcp@beta
 ```
 
 Replace `your-api-key-here` with your actual API key.
@@ -184,7 +184,7 @@ list_billing_top_ups(page=1, number=20)
 
 ```bash
 # Clone the repo
-git clone https://github.com/thetalabs/on-demand-api-mcp
+git clone https://github.com/thetatoken/on-demand-api-mcp
 cd on-demand-api-mcp
 
 # Install dependencies
@@ -206,7 +206,7 @@ THETA_API_KEY=your-key npm start
 npm login
 
 # Publish the package
-npm publish --access public
+npm publish --access public --tag beta
 ```
 
 The package will be available as `@thetalabs/on-demand-api-mcp` on npm.
@@ -256,7 +256,7 @@ jobs:
         with:
           node-version: '20'
       - run: npm ci && npm run build
-      - run: npm publish --access public
+      - run: npm publish --access public --tag beta
       # Add MCP registry publishing step here
 ```
 

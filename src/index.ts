@@ -122,9 +122,11 @@ async function main() {
       mcpServers: {
         'theta-edgecloud': {
           command: 'npx',
-          args: ['@thetalabs/on-demand-api-mcp'],
+          args: ['-y', '@thetalabs/on-demand-api-mcp@beta'],
           env: {
             THETA_API_KEY: 'your-api-key-here',
+            THETA_PROJECT_ID: 'prj_your-project-id',
+            THETA_CONTROLLER_BASE_URL: 'https://controller-beta.thetaedgecloud.com',
           },
         },
       },

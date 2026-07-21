@@ -13,6 +13,26 @@ interface ApiResponse<T> {
   body: T;
 }
 
+const MAXIMUM_ERROR_DETAIL_LENGTH = 4096;
+
+function formatErrorDetail(detail: unknown, fallback: string): string {
+  let text: string;
+  if (typeof detail === 'string') {
+    text = detail;
+  } else if (detail === undefined || detail === null) {
+    text = fallback;
+  } else {
+    try {
+      text = JSON.stringify(detail);
+    } catch {
+      text = fallback;
+    }
+  }
+  return text.length <= MAXIMUM_ERROR_DETAIL_LENGTH
+    ? text
+    : `${text.slice(0, MAXIMUM_ERROR_DETAIL_LENGTH)}...`;
+}
+
 export interface CreateGpuDeploymentInput {
   name?: string;
   display_name?: string;
@@ -62,10 +82,10 @@ export class ControllerApiClient {
 
     if (!response.ok) {
       const envelope = data as { message?: string; error?: string };
-      const message = envelope && typeof envelope === 'object'
+      const detail = envelope && typeof envelope === 'object'
         ? envelope.message || envelope.error || responseText
         : responseText;
-      throw new Error(`Controller API error (${response.status}): ${message || response.statusText}`);
+      throw new Error(`Controller API error (${response.status}): ${formatErrorDetail(detail, response.statusText)}`);
     }
 
     if (response.status === 204 && !responseText) {
@@ -77,7 +97,7 @@ export class ControllerApiClient {
     }
     const envelope = data as ApiResponse<T> & { message?: string; error?: string };
     if (envelope.status !== 'success') {
-      throw new Error(`Controller API error: ${envelope.message || envelope.error || 'unknown error'}`);
+      throw new Error(`Controller API error: ${formatErrorDetail(envelope.message || envelope.error, 'unknown error')}`);
     }
     if (!Object.prototype.hasOwnProperty.call(envelope, 'body')) {
       throw new Error('Controller API returned a success response without a body');

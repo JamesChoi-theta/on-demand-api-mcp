@@ -18,15 +18,31 @@ const confirmationProperty = {
   },
 };
 
+const readOnlyToolAnnotations = {
+  readOnlyHint: true,
+  destructiveHint: false,
+  idempotentHint: true,
+  openWorldHint: true,
+};
+
+const mutatingToolAnnotations = {
+  readOnlyHint: false,
+  destructiveHint: true,
+  idempotentHint: false,
+  openWorldHint: true,
+};
+
 export const resourceToolDefinitions = [
   {
     name: 'list_gpu_resources',
     description: 'List currently available hosted and community GPU capacity and hourly prices where available.',
+    annotations: readOnlyToolAnnotations,
     inputSchema: { type: 'object' as const, properties: {}, required: [] as string[] },
   },
   {
     name: 'get_gpu_resource',
     description: 'Get details for one hosted or community GPU resource.',
+    annotations: readOnlyToolAnnotations,
     inputSchema: {
       type: 'object' as const,
       properties: {
@@ -39,21 +55,25 @@ export const resourceToolDefinitions = [
   {
     name: 'list_gpu_deployment_templates',
     description: 'List GPU Node templates and allowed container images for deployment creation.',
+    annotations: readOnlyToolAnnotations,
     inputSchema: { type: 'object' as const, properties: {}, required: [] as string[] },
   },
   {
     name: 'list_gpu_deployments',
     description: 'List running and stopped GPU Node deployments in the configured project.',
+    annotations: readOnlyToolAnnotations,
     inputSchema: { type: 'object' as const, properties: {}, required: [] as string[] },
   },
   {
     name: 'get_gpu_deployment',
     description: 'Get status and safe details for one GPU Node deployment.',
+    annotations: readOnlyToolAnnotations,
     inputSchema: { type: 'object' as const, properties: deploymentIdProperty, required: ['deployment_id'] },
   },
   {
     name: 'create_gpu_deployment',
     description: 'Create a hosted or community GPU Node. This starts billable capacity and requires explicit confirmation.',
+    annotations: mutatingToolAnnotations,
     inputSchema: {
       type: 'object' as const,
       properties: {
@@ -75,6 +95,7 @@ export const resourceToolDefinitions = [
   {
     name: 'start_gpu_deployment',
     description: 'Start a stopped GPU Node. This resumes billing and requires explicit confirmation.',
+    annotations: mutatingToolAnnotations,
     inputSchema: {
       type: 'object' as const,
       properties: { ...deploymentIdProperty, ...confirmationProperty },
@@ -84,6 +105,7 @@ export const resourceToolDefinitions = [
   {
     name: 'stop_gpu_deployment',
     description: 'Stop a running GPU Node while retaining its restartable configuration. Requires explicit confirmation.',
+    annotations: mutatingToolAnnotations,
     inputSchema: {
       type: 'object' as const,
       properties: { ...deploymentIdProperty, ...confirmationProperty },
@@ -93,6 +115,7 @@ export const resourceToolDefinitions = [
   {
     name: 'delete_gpu_deployment',
     description: 'Permanently delete a GPU Node deployment and its restartable configuration. Requires explicit confirmation.',
+    annotations: mutatingToolAnnotations,
     inputSchema: {
       type: 'object' as const,
       properties: { ...deploymentIdProperty, ...confirmationProperty },
@@ -102,21 +125,25 @@ export const resourceToolDefinitions = [
   {
     name: 'get_gpu_deployment_events',
     description: 'Get recent Kubernetes events for a running GPU Node deployment.',
+    annotations: readOnlyToolAnnotations,
     inputSchema: { type: 'object' as const, properties: deploymentIdProperty, required: ['deployment_id'] },
   },
   {
     name: 'get_gpu_deployment_logs',
     description: 'Get logs for a running GPU Node deployment.',
+    annotations: readOnlyToolAnnotations,
     inputSchema: { type: 'object' as const, properties: deploymentIdProperty, required: ['deployment_id'] },
   },
   {
     name: 'get_billing_balance',
     description: 'Get the current organization credit balance associated with the configured project.',
+    annotations: readOnlyToolAnnotations,
     inputSchema: { type: 'object' as const, properties: {}, required: [] as string[] },
   },
   {
     name: 'get_billing_usage',
     description: 'Get project-scoped usage totals and daily category breakdown for up to 366 days.',
+    annotations: readOnlyToolAnnotations,
     inputSchema: {
       type: 'object' as const,
       properties: {
@@ -129,6 +156,7 @@ export const resourceToolDefinitions = [
   {
     name: 'list_billing_top_ups',
     description: 'List sanitized organization-level credit top-up records.',
+    annotations: readOnlyToolAnnotations,
     inputSchema: {
       type: 'object' as const,
       properties: {
@@ -141,6 +169,7 @@ export const resourceToolDefinitions = [
   {
     name: 'get_billing_pricing',
     description: 'Get chatbot, storage, and on-demand inference pricing. GPU prices are returned by list_gpu_resources.',
+    annotations: readOnlyToolAnnotations,
     inputSchema: { type: 'object' as const, properties: {}, required: [] as string[] },
   },
 ];

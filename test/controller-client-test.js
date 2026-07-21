@@ -6,7 +6,10 @@ const {
   ControllerApiClient,
   resetControllerClient,
 } = require('../dist/api/controller-client.js');
-const { callResourceTool } = require('../dist/tools/resource-management.js');
+const {
+  callResourceTool,
+  resourceToolDefinitions,
+} = require('../dist/tools/resource-management.js');
 
 const originalFetch = global.fetch;
 
@@ -56,6 +59,16 @@ async function run() {
     () => callResourceTool('delete_gpu_deployment', { deployment_id: 'dplb_test', confirm: false }),
     /confirm=true/,
   );
+  await callResourceTool('delete_gpu_deployment', { deployment_id: 'dplb_test', confirm: true });
+  assert.strictEqual(requests.at(-1).options.method, 'DELETE');
+  assert.ok(requests.at(-1).url.endsWith('/gpu-deployments/dplb_test'));
+
+  const createDefinition = resourceToolDefinitions.find((definition) => definition.name === 'create_gpu_deployment');
+  const listDefinition = resourceToolDefinitions.find((definition) => definition.name === 'list_gpu_resources');
+  assert.strictEqual(createDefinition.annotations.destructiveHint, true);
+  assert.strictEqual(createDefinition.annotations.readOnlyHint, false);
+  assert.strictEqual(listDefinition.annotations.destructiveHint, false);
+  assert.strictEqual(listDefinition.annotations.readOnlyHint, true);
 
   global.fetch = async function() {
     return {
@@ -66,6 +79,19 @@ async function run() {
     };
   };
   await assert.rejects(() => client.getBillingBalance(), /Controller API error \(403\): not authorized/);
+
+  global.fetch = async function() {
+    return {
+      ok: false,
+      status: 502,
+      statusText: 'Bad Gateway',
+      text: async () => 'x'.repeat(10000),
+    };
+  };
+  await assert.rejects(
+    () => client.getBillingBalance(),
+    (error) => error.message.length < 4200 && error.message.endsWith('...'),
+  );
 
   global.fetch = async function() {
     return {
